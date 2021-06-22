@@ -1,6 +1,6 @@
 module github.com/pion/mediadevices
 
-go 1.13
+go 1.16
 
 require (
 	github.com/blackjack/webcam v0.0.0-20200313125108-10ed912a8539

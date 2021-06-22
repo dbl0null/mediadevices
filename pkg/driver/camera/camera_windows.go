@@ -1,6 +1,6 @@
 package camera
 
-// #cgo LDFLAGS: -lstrmiids -lole32 -lquartz
+// #cgo LDFLAGS: -lstrmiids -lole32 -loleaut32 -lquartz
 // #include <dshow.h>
 // #include "camera_windows.hpp"
 import "C"
@@ -24,14 +24,11 @@ var (
 )
 
 type camera struct {
-	name         string
-	friendlyName string
-	description  string
-	devicePath   string
-	cam          *C.camera
-	ch           chan []byte
-	buf          []byte
-	bufGo        []byte
+	name  string
+	cam   *C.camera
+	ch    chan []byte
+	buf   []byte
+	bufGo []byte
 }
 
 func init() {
@@ -46,25 +43,12 @@ func init() {
 	}
 
 	for i := 0; i < int(list.num); i++ {
-		name := C.GoString(C.getName(&list, C.int(i)))
-		friendlyName := C.GoString(C.getFriendlyName(&list, C.int(i)))
-		description := C.GoString(C.getDescription(&list, C.int(i)))
-		devicePath := C.GoString(C.getDevicePath(&list, C.int(i)))
-		driver.GetManager().Register(
-			&camera{
-				name:         name,
-				friendlyName: friendlyName,
-				description:  description,
-				devicePath:   devicePath,
-			},
-			driver.Info{
-				Label:        name,
-				Name:         friendlyName, //TODO: replace with real info
-				Manufacturer: description,
-				ModelID:      devicePath,
-				DeviceType:   driver.Camera,
-			},
-		)
+		w := C.getName(&list, C.int(i))
+		name := C.GoString(w)
+		driver.GetManager().Register(&camera{name: name}, driver.Info{
+			Label:      name,
+			DeviceType: driver.Camera,
+		})
 	}
 
 	C.freeCameraList(&list, &errStr)
@@ -73,10 +57,7 @@ func init() {
 func (c *camera) Open() error {
 	c.ch = make(chan []byte)
 	c.cam = &C.camera{
-		name:         C.CString(c.name),
-		friendlyName: C.CString(c.friendlyName),
-		description:  C.CString(c.description),
-		devicePath:   C.CString(c.devicePath),
+		name: C.CString(c.name),
 	}
 
 	var errStr *C.char
@@ -111,9 +92,6 @@ func (c *camera) Close() error {
 
 	if c.cam != nil {
 		C.free(unsafe.Pointer(c.cam.name))
-		C.free(unsafe.Pointer(c.cam.friendlyName))
-		C.free(unsafe.Pointer(c.cam.description))
-		C.free(unsafe.Pointer(c.cam.devicePath))
 		C.freeCamera(c.cam)
 		c.cam = nil
 	}
