@@ -3,8 +3,6 @@ package mediadevices
 import (
 	"io"
 	"testing"
-
-	"github.com/pion/webrtc/v3"
 )
 
 type mockMediaStreamTrack struct {

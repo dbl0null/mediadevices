@@ -1,5 +1,9 @@
 #pragma once
 
+#if __cplusplus < 201103L
+//#error \n\n\n\n This source must be compiled as C++11 or later \n\n\n\n
+#endif
+
 #include <stdint.h>
 
 #ifdef __cplusplus

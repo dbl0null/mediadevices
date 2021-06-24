@@ -48,7 +48,6 @@ var Streams = make(map[string]*Stream)
 var Devices = make(map[string]*md.MediaDeviceInfo)
 
 func init() {
-	Enumerate()
 }
 
 func State() string {

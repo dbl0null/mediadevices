@@ -4,17 +4,11 @@ toolchain_dockerfiles := dockerfiles
 script_path := $(realpath scripts)
 toolchain_path := $(script_path)/$(docker_prefix)
 os_list := \
-	linux \
 	windows \
 	darwin
 arch_list := \
-	armv7 \
-	arm64 \
 	x64
 supported_platforms := \
-  linux-armv7 \
-  linux-arm64 \
-  linux-x64 \
   windows-x64 \
   darwin-x64
 cmd_build := build

@@ -41,12 +41,12 @@ char* getCameraName(IMoniker *pMoniker) {
                 VariantClear(&varName);
         }
       pPropBag->Release();
-      wprintf(L"---->%s\n", m_DeviceName);
       const int len = WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), nullptr, 0, nullptr, nullptr);
       std::string str(len, 0);
       WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), (LPSTR)str.data(), len, nullptr, nullptr);
       char* ret = (char*)malloc(str.size() + 1);
       memcpy(ret, str.c_str(), str.size() + 1);
+      printf("---->%s\n", ret);
       return ret;
 }
 

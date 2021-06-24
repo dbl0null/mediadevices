@@ -56,9 +56,7 @@ func init() {
 
 func (c *camera) Open() error {
 	c.ch = make(chan []byte)
-	c.cam = &C.camera{
-		name: C.CString(c.name),
-	}
+	c.cam = &C.camera{name: C.CString(c.name)}
 
 	var errStr *C.char
 	if C.listResolution(c.cam, &errStr) != 0 {

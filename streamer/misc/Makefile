@@ -3,11 +3,22 @@ all: clean darwin windows clean
 darwin: clean darwin-basic darwin-strip stat
 windows: clean windows-static windows-static-strip stat
 
-clean: 
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
+cmd-exists-%:
+	@hash $(*) > /dev/null 2>&1 || (echo "ERROR: '$(*)' must be installed and available on your PATH."; exit 1)
+
+clean:
 	rm -rf ./bin
 
 stat: 
 	ls -hl ./bin
+
+base:
+	go build -x -v .
 
 darwin-basic:
 	GOENV="/Users/dbl0null/Library/Application Support/go/env" \
@@ -67,4 +78,3 @@ windows-static-strip:
 	--ldflags '--extldflags "-static -static-libgcc -static-libstdc++" -s -w' \
 	-o ./bin/streamer.static.strip.exe
 	objdump -p -f -a -g --section-headers ./bin/streamer.static.strip.exe
-
