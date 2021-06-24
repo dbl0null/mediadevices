@@ -29,6 +29,9 @@ char* getCameraName(IMoniker *pMoniker) {
                     std::wstring wstr(V_BSTR(&varName));
                     m_DeviceName.assign(wstr);
                 } else {
+                #ifdef NO_OLE
+                  m_DeviceName.assign(L"NO_OLE");
+								#else
                   LPOLESTR name;
                   if (SUCCEEDED(pMoniker->GetDisplayName(nullptr, nullptr, &name))) {
                     std::wstring wstr(name);
@@ -37,16 +40,17 @@ char* getCameraName(IMoniker *pMoniker) {
                   LPMALLOC comalloc;
                   CoGetMalloc(1, &comalloc);
                   comalloc->Free(name);
+								#endif
                 }
                 VariantClear(&varName);
         }
       pPropBag->Release();
-      wprintf(L"---->%s\n", m_DeviceName);
       const int len = WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), nullptr, 0, nullptr, nullptr);
       std::string str(len, 0);
       WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), (LPSTR)str.data(), len, nullptr, nullptr);
       char* ret = (char*)malloc(str.size() + 1);
       memcpy(ret, str.c_str(), str.size() + 1);
+      fprintf("\tcam: %s\n", ret);
       return ret;
 }
 
