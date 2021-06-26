@@ -2,6 +2,8 @@ package mediadevices
 
 import (
 	"sync"
+
+	"github.com/pion/webrtc/v3"
 )
 
 // MediaStream is an interface that represents a collection of existing tracks.

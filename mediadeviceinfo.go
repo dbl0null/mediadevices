@@ -30,18 +30,16 @@ func (mdt MediaDeviceType) String() string {
 
 // MediaDeviceInfo represents https://w3c.github.io/mediacapture-main/#dom-mediadeviceinfo
 type MediaDeviceInfo struct {
-	DeviceID     string
-	Kind         MediaDeviceType
-	Name         string
-	Manufacturer string
-	ModelID      string
-	Label        string
-	DeviceType   driver.DeviceType
+	DeviceID   string
+	Kind       MediaDeviceType
+	Name       string
+	Label      string
+	DeviceType driver.DeviceType
 }
 
 func (mdi MediaDeviceInfo) String() string {
-	return fmt.Sprintf("'%s' %s %v %s %s [%s %s]", mdi.Name, mdi.Label, mdi.DeviceID, mdi.Kind, mdi.DeviceType, mdi.Manufacturer, mdi.ModelID)
+	return fmt.Sprintf("'%s' %s %v %s %s", mdi.Name, mdi.Label, mdi.DeviceID, mdi.Kind, mdi.DeviceType)
 }
 func (mdi MediaDeviceInfo) Serialize() string {
-	return fmt.Sprintf("d/%s/%v/%s/%s/%s/%s", mdi.DeviceID, mdi.Kind, mdi.DeviceType, mdi.Name, mdi.Manufacturer, mdi.ModelID)
+	return fmt.Sprintf("d/%s/%v/%s/%s/%s", mdi.DeviceID, mdi.Kind, mdi.DeviceType, mdi.Name, mdi.Label)
 }

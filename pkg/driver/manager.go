@@ -1,5 +1,7 @@
 package driver
 
+import "fmt"
+
 // FilterFn is being used to decide if a driver should be included in the
 // query result.
 type FilterFn func(Driver) bool
@@ -69,6 +71,7 @@ func GetManager() *Manager {
 
 // Register registers adapter to be discoverable by Query
 func (m *Manager) Register(a Adapter, info Info) error {
+	fmt.Printf("[Manager] New adapter: %s\n", info.String())
 	d := wrapAdapter(a, info)
 	m.drivers[d.ID()] = d
 	return nil

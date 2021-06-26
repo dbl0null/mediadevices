@@ -57,6 +57,8 @@ inline char* getName(cameraList* list, int i) {
 #include <windows.h>
 #include <string>
 #include <dshow.h>
+#include <qedit.h>
+#include <mmsystem.h>
 #include <comutil.h>
 #include <oleauto.h>
 

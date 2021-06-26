@@ -1,8 +1,11 @@
 package camera
 
-// #cgo LDFLAGS: -lstrmiids -lole32 -loleaut32 -lquartz
-// #include <dshow.h>
-// #include "camera_windows.hpp"
+/*
+#cgo CXXFLAGS: -std=gnu++11
+#cgo LDFLAGS: -lstrmiids -lole32 -loleaut32 -lquartz
+#include <dshow.h>
+#include "camera_windows.hpp"
+*/
 import "C"
 
 import (
@@ -37,14 +40,12 @@ func init() {
 	var list C.cameraList
 	var errStr *C.char
 	if C.listCamera(&list, &errStr) != 0 {
-		// Failed to list camera
 		fmt.Printf("Failed to list camera: %s\n", C.GoString(errStr))
 		return
 	}
 
 	for i := 0; i < int(list.num); i++ {
-		w := C.getName(&list, C.int(i))
-		name := C.GoString(w)
+		name := C.GoString(C.getName(&list, C.int(i)))
 		driver.GetManager().Register(&camera{name: name}, driver.Info{
 			Label:      name,
 			DeviceType: driver.Camera,

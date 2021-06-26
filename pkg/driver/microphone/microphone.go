@@ -58,12 +58,10 @@ func init() {
 				priority = driver.PriorityHigh
 			}
 			driver.GetManager().Register(newMicrophone(info), driver.Info{
-				Label:        device.ID.String(),
-				Name:         device.Name(),
-				Manufacturer: "",
-				ModelID:      "",
-				DeviceType:   driver.Microphone,
-				Priority:     priority,
+				Label:      device.ID.String(),
+				Name:       device.Name(),
+				DeviceType: driver.Microphone,
+				Priority:   priority,
 			})
 		}
 	}

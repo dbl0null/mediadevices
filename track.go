@@ -9,12 +9,14 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/pion/rtp"
+	"github.com/pion/webrtc/v3"
+
 	"github.com/pion/mediadevices/pkg/codec"
 	"github.com/pion/mediadevices/pkg/driver"
 	"github.com/pion/mediadevices/pkg/io/audio"
 	"github.com/pion/mediadevices/pkg/io/video"
 	"github.com/pion/mediadevices/pkg/wave"
-	"github.com/pion/rtp"
 )
 
 const (

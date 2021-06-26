@@ -7,8 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pion/webrtc/v3"
+
 	md "github.com/pion/mediadevices"
-	//h264 "github.com/pion/mediadevices/pkg/codec/x264"
+	// h264 "github.com/pion/mediadevices/pkg/codec/x264"
 	h264 "github.com/pion/mediadevices/pkg/codec/openh264"
 	"github.com/pion/mediadevices/pkg/codec/opus"
 	"github.com/pion/mediadevices/pkg/driver"
@@ -72,7 +74,7 @@ func State() string {
 }
 
 func Enumerate() map[string]*md.MediaDeviceInfo {
-	fmt.Printf("ENUMERATING:\n\n")
+	fmt.Printf("ENUMERATING:\n")
 
 	drivers := driver.GetManager().Query(func(drv driver.Driver) bool {
 		return true
@@ -93,9 +95,9 @@ func Enumerate() map[string]*md.MediaDeviceInfo {
 			continue
 		}
 		drvInfo := drv.Info()
-		deviceInfo := md.MediaDeviceInfo{DeviceID: deviceID, Kind: kind, Label: drvInfo.Label, Name: drvInfo.Name, Manufacturer: drvInfo.Manufacturer, ModelID: drvInfo.ModelID, DeviceType: drvInfo.DeviceType}
+		deviceInfo := md.MediaDeviceInfo{DeviceID: deviceID, Kind: kind, Label: drvInfo.Label, Name: drvInfo.Name, DeviceType: drvInfo.DeviceType}
 		devices[deviceID] = &deviceInfo
-		fmt.Printf("%s\n\n", deviceInfo.String())
+		fmt.Printf("\t%s\n", deviceInfo.String())
 
 		if driver.FilterVideoRecorder()(drv) && sending == "" {
 			sending = deviceID

@@ -1,6 +1,8 @@
 package driver
 
 import (
+	"fmt"
+
 	"github.com/pion/mediadevices/pkg/io/audio"
 	"github.com/pion/mediadevices/pkg/io/video"
 	"github.com/pion/mediadevices/pkg/prop"
@@ -27,12 +29,14 @@ const (
 )
 
 type Info struct {
-	Label        string
-	Name         string
-	Manufacturer string
-	ModelID      string
-	DeviceType   DeviceType
-	Priority     Priority
+	Label      string
+	Name       string
+	DeviceType DeviceType
+	Priority   Priority
+}
+
+func (info *Info) String() string {
+	return fmt.Sprintf("[%s] %s #%s", info.DeviceType[:3], info.Name, info.Label)
 }
 
 type Adapter interface {

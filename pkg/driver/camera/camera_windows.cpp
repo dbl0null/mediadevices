@@ -9,88 +9,85 @@
 
 #include "camera_windows.hpp"
 #include "_cgo_export.h"
+#define NO_OLE 1
 
-// printErr shows string representation of HRESULT.
-// This is for debugging.
 void printErr(HRESULT hr) {
   char buf[128];
   AMGetErrorTextA(hr, buf, 128);
-  fprintf(stderr, "%s\n", buf);
+  fprintf(stderr, "ERROR: %s\n", buf);
 }
 
 char* getCameraName(IMoniker *pMoniker) {
-        std::wstring m_DeviceName;
-        m_DeviceName.assign(L"Unknown Device");
-        IPropertyBag *pPropBag;
-        if (SUCCEEDED(pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag))) {
-                VARIANT varName;
-                VariantInit(&varName);
-                if (SUCCEEDED(pPropBag->Read(L"FriendlyName", &varName, 0))) {
-                    std::wstring wstr(V_BSTR(&varName));
-                    m_DeviceName.assign(wstr);
-                } else {
-                  LPOLESTR name;
-                  if (SUCCEEDED(pMoniker->GetDisplayName(nullptr, nullptr, &name))) {
-                    std::wstring wstr(name);
-                    m_DeviceName.assign(wstr);
-                  }
-                  LPMALLOC comalloc;
-                  CoGetMalloc(1, &comalloc);
-                  comalloc->Free(name);
-                }
-                VariantClear(&varName);
+    std::wstring m_DeviceName(L"Unknown Device");
+    IPropertyBag *pPropBag;
+    if (SUCCEEDED(pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag))) {
+        VARIANT var;
+        VariantInit(&var);
+        var.vt = VT_BSTR;
+        HRESULT hr = pPropBag->Read(L"Description", &var, 0);
+        if (FAILED(hr)) {
+            printErr(hr);
+            hr = pPropBag->Read(L"FriendlyName", &var, 0);
+            if (FAILED(hr)) { printErr(hr); }
         }
-      pPropBag->Release();
-      const int len = WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), nullptr, 0, nullptr, nullptr);
-      std::string str(len, 0);
-      WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), (LPSTR)str.data(), len, nullptr, nullptr);
-      char* ret = (char*)malloc(str.size() + 1);
-      memcpy(ret, str.c_str(), str.size() + 1);
-      printf("---->%s\n", ret);
-      return ret;
+        if (SUCCEEDED(hr)) {
+            printf("%S\n", var.bstrVal);
+            std::wstring name(var.bstrVal);
+            m_DeviceName.assign(name);
+            VariantClear(&var);
+        }
+    }
+    pPropBag->Release();
+    const int len = WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), nullptr, 0, nullptr, nullptr);
+    std::string str(len, 0);
+    WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), (LPSTR)str.data(), len, nullptr, nullptr);
+    char* ret = (char*)malloc(str.size() + 1);
+    memcpy(ret, str.c_str(), str.size() + 1);
+    printf("\tCamera: %s\n", ret);
+    return ret;
 }
 
 // listCamera stores information of the devices to cameraList*.
 int listCamera(cameraList* list, const char** errstr) {
-  ICreateDevEnum* sysDevEnum = nullptr;
-  IEnumMoniker* enumMon = nullptr;
+    ICreateDevEnum* sysDevEnum = nullptr;
+    IEnumMoniker* enumMon = nullptr;
 
-  if (FAILED(CoCreateInstance(CLSID_SystemDeviceEnum, nullptr, CLSCTX_INPROC, IID_ICreateDevEnum, (void**)&sysDevEnum))) {
-    *errstr = errEnumDevice;
-    goto fail;
-  }
+    if (FAILED(CoCreateInstance(CLSID_SystemDeviceEnum, nullptr, CLSCTX_INPROC, IID_ICreateDevEnum, (void**)&sysDevEnum))) {
+        *errstr = errEnumDevice;
+        goto fail;
+    }
 
-  if (FAILED(sysDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &enumMon, 0))) {
-    *errstr = errEnumDevice;
-    goto fail;
-  }
+    if (FAILED(sysDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &enumMon, 0))) {
+        *errstr = errEnumDevice;
+        goto fail;
+    }
 
-  safeRelease(&sysDevEnum);
-
+    safeRelease(&sysDevEnum);
+  
   {
     IMoniker* moniker;
     list->num = 0;
     while (enumMon->Next(1, &moniker, nullptr) == S_OK) {
-      moniker->Release();
-      list->num++;
+        moniker->Release();
+        list->num++;
     }
 
     enumMon->Reset();
     list->name = new char*[list->num];
     int i = 0;
     while (enumMon->Next(1, &moniker, nullptr) == S_OK) {
-      list->name[i] = getCameraName(moniker);
-      moniker->Release();
+        list->name[i] = getCameraName(moniker);
+        moniker->Release();
     }
   }
 
-  safeRelease(&enumMon);
-  return 0;
+    safeRelease(&enumMon);
+    return 0;
 
 fail:
-  safeRelease(&sysDevEnum);
-  safeRelease(&enumMon);
-  return 1;
+    safeRelease(&sysDevEnum);
+    safeRelease(&enumMon);
+    return 1;
 }
 
 // freeCameraList frees all resources stored in cameraList*.

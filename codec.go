@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pion/webrtc/v3"
+
 	"github.com/pion/mediadevices/pkg/codec"
 	"github.com/pion/mediadevices/pkg/io/audio"
 	"github.com/pion/mediadevices/pkg/io/video"
