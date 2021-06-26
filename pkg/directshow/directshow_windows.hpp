@@ -21,7 +21,6 @@ typedef struct {
   int height;
   size_t buf; // uintptr
 
-  char* uid;
   char* name;
   int numProps;
   imageProp* props;
@@ -33,10 +32,8 @@ typedef struct {
 
 typedef struct {
   int num;
-  char** uid;
   char** name;
 } cameraList;
-
 
 int openCamera(camera* cam, const char** errstr);
 void freeCamera(camera* cam);
@@ -46,10 +43,6 @@ int freeCameraList(cameraList* list, const char** errstr);
 
 inline imageProp* getProp(camera* cam, int i) {
   return &cam->props[i];
-}
-
-inline char* getUid(cameraList* list, int i) {
-  return list->uid[i];
 }
 
 inline char* getName(cameraList* list, int i) {

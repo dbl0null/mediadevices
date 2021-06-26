@@ -205,11 +205,6 @@ STATUS AVBindDevices(AVBindMediaType mediaType, PAVBindDevice *ppDevices, int *p
         strncpy(pDevice->name, refDevice.localizedName.UTF8String, MAX_DEVICE_UID_CHARS);
         pDevice->name[MAX_DEVICE_UID_CHARS] = '\0';
 
-        strncpy(pDevice->manufacturer, refDevice.manufacturer.UTF8String, MAX_DEVICE_UID_CHARS);
-        pDevice->manufacturer[MAX_DEVICE_UID_CHARS] = '\0';
-
-        strncpy(pDevice->modelID, refDevice.modelID.UTF8String, MAX_DEVICE_UID_CHARS);
-        pDevice->modelID[MAX_DEVICE_UID_CHARS] = '\0';
         i++;
     }
 

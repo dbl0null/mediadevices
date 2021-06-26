@@ -66,8 +66,6 @@ typedef struct AVBindSession AVBindSession, *PAVBindSession;
 typedef struct {
 		char uid[MAX_DEVICE_UID_CHARS + 1];
 		char name[MAX_DEVICE_UID_CHARS + 1];
-		char manufacturer[MAX_DEVICE_UID_CHARS + 1];
-		char modelID[MAX_DEVICE_UID_CHARS + 1];
 } AVBindDevice, *PAVBindDevice;
 
 // AVBindDevices returns a list of AVBindDevices. The result array is pointing to a static

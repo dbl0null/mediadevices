@@ -19,7 +19,6 @@ import (
 )
 
 func main() {
-
 	log.SetFlags(0)
 
 	uid, err := machineid.ProtectedID(os.Args[0])

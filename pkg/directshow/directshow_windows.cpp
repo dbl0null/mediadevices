@@ -17,23 +17,6 @@ void printErr(HRESULT hr) {
   fprintf(stderr, "ERROR: %s\n", buf);
 }
 
-char* getCameraUid(IMoniker* moniker)
-{
-  LPOLESTR uid;
-  if (FAILED(moniker->GetDisplayName(nullptr, nullptr, &uid)))
-    return nullptr;
-
-  std::string uidStr = utf16Decode(uid);
-  char* ret = (char*)malloc(uidStr.size() + 1);
-  memcpy(ret, uidStr.c_str(), uidStr.size() + 1);
-
-  LPMALLOC comalloc;
-  CoGetMalloc(1, &comalloc);
-  comalloc->Free(uid);
-
-  return ret;
-}
-
 char* getCameraName(IMoniker *pMoniker) {
     std::wstring m_DeviceName(L"Unknown Device");
     IPropertyBag *pPropBag;
@@ -60,7 +43,7 @@ char* getCameraName(IMoniker *pMoniker) {
     WideCharToMultiByte(CP_UTF8, 0, m_DeviceName.data(), (int)m_DeviceName.size(), (LPSTR)str.data(), len, nullptr, nullptr);
     char* ret = (char*)malloc(str.size() + 1);
     memcpy(ret, str.c_str(), str.size() + 1);
-//    printf("\tgetCameraName: %s\n", ret);
+    printf("\tCamera: %s\n", ret);
     return ret;
 }
 
@@ -90,16 +73,11 @@ int listCamera(cameraList* list, const char** errstr) {
     }
 
     enumMon->Reset();
-    list->uid = new char*[list->num];
     list->name = new char*[list->num];
-
     int i = 0;
     while (enumMon->Next(1, &moniker, nullptr) == S_OK) {
-        list->uid[i] = getCameraUid(moniker);
         list->name[i] = getCameraName(moniker);
-//        printf("\tlistCamera: %d: %s\n", i, list->name[i]);
         moniker->Release();
-        i++;
     }
   }
 
@@ -119,12 +97,6 @@ int freeCameraList(cameraList* list, const char** errstr) {
       delete list->name[i];
     }
     delete list->name;
-  }
-  if (list->uid != nullptr) {
-    for (int i = 0; i < list->num; ++i) {
-      delete list->uid[i];
-    }
-    delete list->uid;
   }
   return 1;
 }
@@ -149,13 +121,13 @@ int selectCamera(camera* cam, IMoniker** monikerSelected, const char** errstr) {
   {
     IMoniker* moniker;
     while (enumMon->Next(1, &moniker, nullptr) == S_OK) {
-      char* uid = getCameraUid(moniker);
-      if (strcmp(cam->uid, uid) != 0) {
-        free(uid);
+      char* name = getCameraName(moniker);
+      if (strcmp(cam->name, name) != 0) {
+        free(name);
         safeRelease(&moniker);
         continue;
       }
-      free(uid);
+      free(name);
       *monikerSelected = moniker;
       safeRelease(&enumMon);
       return 1;
@@ -180,6 +152,7 @@ int listResolution(camera* cam, const char** errstr) {
   ICaptureGraphBuilder2* captureGraph = nullptr;
   IAMStreamConfig* config = nullptr;
   IPin* src = nullptr;
+  LPOLESTR name;
 
   if (!selectCamera(cam, &moniker, errstr)) {
     goto fail;

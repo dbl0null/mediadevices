@@ -95,6 +95,7 @@ func Enumerate() map[string]*md.MediaDeviceInfo {
 			continue
 		}
 		drvInfo := drv.Info()
+
 		deviceInfo := md.MediaDeviceInfo{DeviceID: deviceID, Kind: kind, Label: drvInfo.Label, Name: drvInfo.Name, DeviceType: drvInfo.DeviceType}
 		devices[deviceID] = &deviceInfo
 		fmt.Printf("\t%s\n", deviceInfo.String())
@@ -150,7 +151,7 @@ func Start(addr, deviceId string) {
 		constraints.Codec = md.NewCodecSelector(md.WithVideoEncoders(&h264Params))
 		constraints.Video = func(c *md.MediaTrackConstraints) {
 			c.DeviceID = prop.StringExact(deviceId)
-			c.Width = prop.IntRanged{Min: 1280, Max: 1920, Ideal: 1280}
+			c.Width = prop.IntRanged{Min: 640, Max: 1920, Ideal: 1280}
 		}
 
 		codecName = webrtc.MimeTypeH264

@@ -15,7 +15,7 @@ func TestDiscover(t *testing.T) {
 	const (
 		shortName  = "unittest-video0"
 		shortName2 = "unittest-video1"
-		longName   = "unittest-long-device-name:0:1:2:3"
+		longName   = "unittest-long-device-Name:0:1:2:3"
 	)
 
 	dir, err := ioutil.TempDir("", "")

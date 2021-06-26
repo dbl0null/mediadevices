@@ -1,4 +1,4 @@
-package camera
+package directshow
 
 /*
 #cgo CXXFLAGS: -std=gnu++11
@@ -22,17 +22,26 @@ import (
 )
 
 var (
-	callbacks   = make(map[uintptr]*Camera)
+	callbacks   = make(map[uintptr]*camera)
 	callbacksMu sync.RWMutex
 )
 
-type Camera struct {
-	UID   string
-	Name  string
+type camera struct {
+	name  string
 	cam   *C.camera
 	ch    chan []byte
 	buf   []byte
 	bufGo []byte
+}
+
+// Device represents a metadata that later can be used to retrieve back the
+// underlying device given by AVFoundation
+type Device struct {
+	// UID is a unique identifier for a device
+	UID     string
+	Name    string
+	Label   string
+	cDevice C.camera
 }
 
 func init() {
@@ -44,14 +53,12 @@ func init() {
 		fmt.Printf("Failed to list camera: %s\n", C.GoString(errStr))
 		return
 	}
-	fmt.Printf("listCamera: %d\n", list.num)
+
 	for i := 0; i < int(list.num); i++ {
-		uid := C.GoString(C.getUid(&list, C.int(i)))
 		name := C.GoString(C.getName(&list, C.int(i)))
-		cam := &Camera{UID: uid, Name: name}
-		driver.GetManager().Register(cam, driver.Info{
-			Label:      uid,
-			Name:       name,
+		cam := newCamera(device)
+		driver.GetManager().Register(&camera{name: name}, driver.Info{
+			Label:      name,
 			DeviceType: driver.Camera,
 		})
 	}
@@ -59,12 +66,12 @@ func init() {
 	C.freeCameraList(&list, &errStr)
 }
 
-func (cam *Camera) Open() error {
-	cam.ch = make(chan []byte)
-	cam.cam = &C.camera{name: C.CString(cam.Name), uid: C.CString(cam.UID)}
+func (c *camera) Open() error {
+	c.ch = make(chan []byte)
+	c.cam = &C.camera{name: C.CString(c.name)}
 
 	var errStr *C.char
-	if C.listResolution(cam.cam, &errStr) != 0 {
+	if C.listResolution(c.cam, &errStr) != 0 {
 		return fmt.Errorf("failed to open device: %s", C.GoString(errStr))
 	}
 
@@ -84,44 +91,44 @@ func imageCallback(cam uintptr) {
 	cb.ch <- cb.bufGo
 }
 
-func (cam *Camera) Close() error {
+func (c *camera) Close() error {
 	callbacksMu.Lock()
-	key := uintptr(unsafe.Pointer(cam.cam))
+	key := uintptr(unsafe.Pointer(c.cam))
 	if _, ok := callbacks[key]; ok {
 		delete(callbacks, key)
 	}
 	callbacksMu.Unlock()
-	close(cam.ch)
+	close(c.ch)
 
-	if cam.cam != nil {
-		C.free(unsafe.Pointer(cam.cam.name))
-		C.freeCamera(cam.cam)
-		cam.cam = nil
+	if c.cam != nil {
+		C.free(unsafe.Pointer(c.cam.name))
+		C.freeCamera(c.cam)
+		c.cam = nil
 	}
 	return nil
 }
 
-func (cam *Camera) VideoRecord(p prop.Media) (video.Reader, error) {
+func (c *camera) VideoRecord(p prop.Media) (video.Reader, error) {
 	nPix := p.Width * p.Height
-	cam.buf = make([]byte, nPix*2) // for YUY2
-	cam.bufGo = make([]byte, nPix*2)
-	cam.cam.width = C.int(p.Width)
-	cam.cam.height = C.int(p.Height)
-	cam.cam.buf = C.size_t(uintptr(unsafe.Pointer(&cam.buf[0])))
+	c.buf = make([]byte, nPix*2) // for YUY2
+	c.bufGo = make([]byte, nPix*2)
+	c.cam.width = C.int(p.Width)
+	c.cam.height = C.int(p.Height)
+	c.cam.buf = C.size_t(uintptr(unsafe.Pointer(&c.buf[0])))
 
 	var errStr *C.char
-	if C.openCamera(cam.cam, &errStr) != 0 {
+	if C.openCamera(c.cam, &errStr) != 0 {
 		return nil, fmt.Errorf("failed to open device: %s", C.GoString(errStr))
 	}
 
 	callbacksMu.Lock()
-	callbacks[uintptr(unsafe.Pointer(cam.cam))] = cam
+	callbacks[uintptr(unsafe.Pointer(c.cam))] = c
 	callbacksMu.Unlock()
 
 	img := &image.YCbCr{}
 
 	r := video.ReaderFunc(func() (image.Image, func(), error) {
-		b, ok := <-cam.ch
+		b, ok := <-c.ch
 		if !ok {
 			return nil, func() {}, io.EOF
 		}
@@ -137,10 +144,10 @@ func (cam *Camera) VideoRecord(p prop.Media) (video.Reader, error) {
 	return r, nil
 }
 
-func (cam *Camera) Properties() []prop.Media {
+func (c *camera) Properties() []prop.Media {
 	properties := []prop.Media{}
-	for i := 0; i < int(cam.cam.numProps); i++ {
-		p := C.getProp(cam.cam, C.int(i))
+	for i := 0; i < int(c.cam.numProps); i++ {
+		p := C.getProp(c.cam, C.int(i))
 		// TODO: support other FOURCC
 		if p.fcc == fourccYUY2 {
 			properties = append(properties, prop.Media{

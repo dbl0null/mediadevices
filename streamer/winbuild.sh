@@ -28,6 +28,7 @@ source .env && GOOS=windows GOARCH=amd64 CGO_ENABLED=1 \
 if [ $? -eq 0 ]; then echo "${BGGREEN}\t\t\tDone STATIC \t\t\t${NC}";
 else echo "${BGRED}\t\t\tFail STATIC \t\t\t${NC}" >&2; fi
 
+#exit
 
 #Build STRIPPED
 source .env && GOOS=windows GOARCH=amd64 CGO_ENABLED=1 \
