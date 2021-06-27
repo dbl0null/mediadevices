@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/getlantern/systray"
 	"github.com/pion/webrtc/v3"
 
 	md "github.com/pion/mediadevices"
@@ -48,6 +49,10 @@ func (s Stream) Serialize() string {
 
 var Streams = make(map[string]*Stream)
 var Devices = make(map[string]*md.MediaDeviceInfo)
+var Menu = make(map[string]*systray.MenuItem)
+var mVideo *systray.MenuItem
+var mAudio *systray.MenuItem
+var mStreams *systray.MenuItem
 
 func init() {
 }
@@ -86,18 +91,22 @@ func Enumerate() map[string]*md.MediaDeviceInfo {
 	for _, drv := range drivers {
 		var kind md.MediaDeviceType
 		deviceID := drv.ID()
+		drvInfo := drv.Info()
+
 		switch {
 		case driver.FilterVideoRecorder()(drv):
+			Menu[deviceID] = mVideo.AddSubMenuItem(drvInfo.Name, drvInfo.Label)
 			kind = md.VideoInput
 		case driver.FilterAudioRecorder()(drv):
+			Menu[deviceID] = mAudio.AddSubMenuItem(drvInfo.Name, drvInfo.Label)
 			kind = md.AudioInput
 		default:
 			continue
 		}
-		drvInfo := drv.Info()
 
 		deviceInfo := md.MediaDeviceInfo{DeviceID: deviceID, Kind: kind, Label: drvInfo.Label, Name: drvInfo.Name, DeviceType: drvInfo.DeviceType}
 		devices[deviceID] = &deviceInfo
+
 		fmt.Printf("\t%s\n", deviceInfo.String())
 
 		if driver.FilterVideoRecorder()(drv) && sending == "" {
@@ -114,6 +123,8 @@ func Enumerate() map[string]*md.MediaDeviceInfo {
 }
 
 func Start(addr, deviceId string) {
+	Menu[deviceId].Check()
+
 	device, ok := Devices[deviceId]
 	if !ok {
 		fmt.Printf("[%s->%s] no such device\n", deviceId, addr)

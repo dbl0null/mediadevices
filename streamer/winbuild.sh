@@ -13,17 +13,17 @@ BGGREEN="\033[0;42m"
 BGYELLOW="\033[0;42m"
 BGLBLUE="\033[0;104m"
 
-source .env && GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 \
-        CXX="g++-11" CC="cpp-11" \
-        go build -x -v -tags "osusergo netgo static_build static" \
-        --ldflags '-s -w --extldflags "-static -static-libgcc -static-libstdc++ -pthread -lrt -lcrt"' \
-        -o ./bin/streamer.static.bin
-exit
+#source .env && GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 \
+#        CXX="g++-11" CC="cpp-11" \
+#        go build -x -v -tags "osusergo netgo static_build static" \
+#        --ldflags '-s -w --extldflags "-static -static-libgcc -static-libstdc++ -pthread -lrt -lcrt"' \
+#        -o ./bin/streamer.static.bin
+#exit
 #Build WINDOWS
 echo "${BGLBLUE}\t\t\tBuild WINDOWS\t\t\t${NC}"
 
 #Build STATIC
-GOENV=windows2.env go build -x -v -o ./bin/streamer.static.exe
+#GOENV=windows2.env go build -x -v -o ./bin/streamer.static.exe
 
 #CGO_ENABLED=1 CXX="g++-11" CC="gcc-11" \
 #        go build -x -v -tags "osusergo,netgo,static_build,static" \
@@ -33,17 +33,17 @@ GOENV=windows2.env go build -x -v -o ./bin/streamer.static.exe
 #        go build -x -v -tags "osusergo,netgo,static_build,static" \
 #        --ldflags '-s -w --extldflags "-static -static-libgcc -static-libstdc++"' \
 #        -o ./bin/streamer.static.bin
-CGO_ENABLED=1 CXX="x86_64-apple-darwin19-g++-11" CC="x86_64-apple-darwin19-gcc-11" \
-        go build -x -v -tags "osusergo,netgo,static_build,static" \
-        --ldflags '-s -w --extldflags "-static -static-libgcc -static-libstdc++"' \
-        -o ./bin/streamer.static.bin
+#CGO_ENABLED=1 CXX="x86_64-apple-darwin19-g++-11" CC="x86_64-apple-darwin19-gcc-11" \
+#        go build -x -v -tags "osusergo,netgo,static_build,static" \
+#        --ldflags '-s -w --extldflags "-static -static-libgcc -static-libstdc++"' \
+#        -o ./bin/streamer.static.bin
 #Build STATIC
 #source windows.env &&
 GOOS=windows GOARCH=amd64 CGO_ENABLED=1 \
         CXX="x86_64-w64-mingw32-g++" CXX_FOR_TARGET="x86_64-w64-mingw32-g++" \
         CC="x86_64-w64-mingw32-gcc" CC_FOR_TARGET="x86_64-w64-mingw32-gcc" \
         go build -x -tags "osusergo,netgo,static_build,static" \
-        --ldflags '--extldflags "-static -static-libgcc -static-libstdc++"' \
+        --ldflags '-H=windowsgui --extldflags "-static -static-libgcc -static-libstdc++"' \
         -o ./bin/streamer.static.exe
 
 if [ $? -eq 0 ]; then echo "${BGGREEN}\t\t\tDone STATIC \t\t\t${NC}";
@@ -57,13 +57,13 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=1 \
         CXX="x86_64-w64-mingw32-g++" CXX_FOR_TARGET="x86_64-w64-mingw32-g++" \
         CC="x86_64-w64-mingw32-gcc" CC_FOR_TARGET="x86_64-w64-mingw32-gcc" \
         go build -x -tags "osusergo netgo static_build static" \
-        --ldflags '-s -w --extldflags "-static -static-libgcc -static-libstdc++"' \
+        --ldflags '-H=windowsgui -s -w --extldflags "-static -static-libgcc -static-libstdc++"' \
         -o ./bin/streamer.static.stripped.exe
 
 if [ $? -eq 0 ]; then echo "${BGGREEN}\t\t\tDone STRIPPED\t\t\t${NC}";
 else echo "${BGRED}\t\t\tFail STRIPPED\t\t\t${NC}" >&2; fi
 
-#exit
+exit
 
 #Build MACOS
 echo "${BGLBLUE}\t\t\tBuild MACOS  \t\t\t${NC}"

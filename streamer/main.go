@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getlantern/systray"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
@@ -18,17 +20,25 @@ import (
 	"github.com/denisbrodbeck/machineid"
 )
 
+var Uid string
+
+func onExit() {
+	now := time.Now()
+	ioutil.WriteFile(fmt.Sprintf(`on_exit_%d.txt`, now.UnixNano()), []byte(now.String()), 0644)
+}
+
 func main() {
 	log.SetFlags(0)
+	var err error
 
-	uid, err := machineid.ProtectedID(os.Args[0])
+	Uid, err = machineid.ProtectedID(os.Args[0])
 	if err != nil {
-		uid = "temp-" + uuid.New().String()
+		Uid = "temp-" + uuid.New().String()
 	}
 
-	fmt.Printf("\n\nApplication ID: %v\n\n", uid)
+	systray.Run(onReady, onExit)
 
-	Enumerate()
+	fmt.Printf("\n\nApplication ID: %v\n\n", Uid)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
@@ -36,9 +46,7 @@ func main() {
 	addr := "phobia.bsjsc.ru"
 	// TODO: ws host as parameter, adjustable RTP payload types, bitrate and resolution
 
-	u := url.URL{Scheme: "wss", Host: addr, Path: "streamers/" + uid}
-
-	ui()
+	u := url.URL{Scheme: "wss", Host: addr, Path: "streamers/" + Uid}
 
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
