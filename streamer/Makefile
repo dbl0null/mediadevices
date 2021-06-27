@@ -48,8 +48,10 @@ mac-static-strip:
 	go build ${SS_TOOL_ARGS} -tags ${SS_TAGS} --ldflags ${SS_LDFLAGS_STRIP} -o ./bin/streamer.static.strip.bin
 
 win-static:
+	-include windows.env
 	@echo "${RED}BUILDING 'win-static'${NC}"
-	GOOS=windows GOARCH=amd64 go build -o ./bin/streamer.static.exe
+	go env
+	go build -o ./bin/streamer.static.exe
 
 win-static-strip:
 	@echo "${RED}BUILDING 'win-static-strip'${NC}"

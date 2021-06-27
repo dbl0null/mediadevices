@@ -38,6 +38,8 @@ func main() {
 
 	u := url.URL{Scheme: "wss", Host: addr, Path: "streamers/" + uid}
 
+	ui()
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 

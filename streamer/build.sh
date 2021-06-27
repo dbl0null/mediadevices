@@ -3,14 +3,16 @@ export GOROOT="/Users/dbl0null/.go"
 
 GOOS=darwin GOARCH=amd64 \
 	go build -x -v \
+	-tags "osusergo netgo static_build static" \
 	--ldflags '--extldflags "-static -static-libgcc -static-libstdc++" -s -w' \
 	-o ./bin/streamer.static.stripped.bin
 
 GOOS=darwin GOARCH=amd64 \
 	go build -x -v \
+	-tags "osusergo netgo static_build static" \
 	--ldflags '--extldflags "-static -static-libgcc -static-libstdc++"' \
 	-o ./bin/streamer.static.bin
-
+exit
 GOOS=windows GOARCH=amd64 \
 	CGO_ENABLED=1 \
 	CXX="x86_64-w64-mingw32-g++" \
